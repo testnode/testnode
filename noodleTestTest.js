@@ -1,25 +1,47 @@
 var test = require('./noodleTest')();
-var subject = require('./noodleTest')({quiet: true});
 test.onFailureExitNonZero();
 
 test.context("NoodleTest dogfood test", function() {
 
-    test.it("should call the context callback", function(done) {
+    test.it("should call the first context callback", function(done) {
 
-        subject.context("test context", function() {
+        var t = require('./noodleTest')({quiet: true});
+        t.context("test context", function() {
           done();
-          subject.it("test test", function(done2){
+          t.it("test test", function(done2){
             done2();
           });
         });
 
     });
 
-    test.it("should call the test callback", function(done) {
+    test.it("should call the first test callback", function(done) {
 
-        subject.context("test context", function() {
-          subject.it("test test", function(done2){
+        var t = require('./noodleTest')({quiet: true});
+        t.context("test context", function() {
+          t.it("test test", function(done2){
             done();
+            done2();
+          });
+        });
+
+    });
+
+    test.it("should call the second context callback after the first", function(done) {
+        var myThis = this;
+
+        var firstCalled = false;
+        var t = require('./noodleTest')({quiet: true});
+        t.context("test context", function() {
+          firstCalled = true;
+          t.it("test1", function(done2){
+            done2();
+          });
+        });
+        t.context("test context", function() {
+          myThis.assert(firstCalled);
+          done();
+          t.it("test1", function(done2){
             done2();
           });
         });
