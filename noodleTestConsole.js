@@ -48,30 +48,30 @@ module.exports = (function(test){
     var last = null;
 
     test.on('pushContext', function(o){
-        var contextIndent = o.context.length;
-        log(contextIndent, color(o.context[o.context.length-1], "yellow"));
+        var contextIndent = o.context._depth();
+        log(contextIndent, color(o.context.name, "yellow"));
         last = null;
     });
 
-    test.on('popContext', function(o){
-        log(0, '');
-    });
+//    test.on('popContext', function(o){
+//        log(0, '');
+//    });
 
     test.on('testStarted', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         log(contextIndent+1, "it " + color(t.name, "yellow"));
         last = 'testStarted';
     });
 
     test.on('testTimeout', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         log(contextIndent, 'Did you remember to call done() for test "'+t.name+'"?', 'magenta');
         log(contextIndent, 'Make sure you do. We don\'t print out the stack traces until done() has been called' +"\n", 'magenta');
         last = null;
     });
 
     test.on('testDone', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         var n = t.failures.length || t.passes.length;
         var message = (t.failures.length == 0) ? color(n + ' assertion'+(n==1?'':'s')+' passed','green') : color(n + ' assertion'+(n==1?'':'s')+" failed\n",'red');
         log(contextIndent+2, message);
@@ -86,19 +86,19 @@ module.exports = (function(test){
     });
 
     test.on('testFlunk', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         log(contextIndent+2, t.context + ': '+color('Failed','red')+': ' + t.message);
         last = null;
     });
 
     test.on('assertionPassed', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         dot(contextIndent+2, color('+','green'));
         last = 'assertionPassed';
     });
 
     test.on('assertionFailed', function(t){
-        var contextIndent = t.context.length;
+        var contextIndent = t.context._depth();
         dot(contextIndent+2, color('x','red'));
         last = 'assertionFailed';
     });

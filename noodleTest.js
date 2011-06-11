@@ -9,12 +9,6 @@ module.exports = (function(config){
     // Whether to run the tests sequentially. If false, output will be screwy.
     config.sequential = true;
 
-    var contextStack = [];
-
-    var copyContext = function() {
-        return contextStack.join(':').split(':');
-    };
-
     var eventListeners = {};
     var triggerEvent = function(eventName) {
         var args = arguments;
@@ -62,11 +56,63 @@ module.exports = (function(config){
         return this.assertMethod + '(' + sys.inspect(this.args[0]) + ')'
     };
 
-    var Test = function(context, name) {
+    var testQueue = (function() {
+        var begun = false;
+        var q = {};
+        q.array = [];
+        q.put = function(test) {
+          q.array.push(test);
+          if (!begun) {
+            begun = true;
+            q.next();
+          }
+        };
+        q.next = function() {
+          if (q.array.length > 0) {
+            var top = q.array[0];
+            q.array = q.array.slice(1);
+            top.onDone(function(){
+              q.next();
+            });
+            top._call();
+          } else {
+            begun = false;
+          }
+        };
+        return q;
+    })();
+
+    var Test = function(context, name, testFunction) {
         this.context = context;
         this.name = name;
+        this.testFunction = testFunction;
         this.failures = [];
         this.passes = [];
+        this.doneCallbacks = [];
+        testQueue.put(this);
+        //this._call();
+    };
+    Test.prototype.onDone = function(callback) {
+      this.doneCallbacks.push(callback);
+    };
+    Test.prototype._call = function() {
+        var test = this;
+        triggerEvent('testStarted', this);
+        var done = function() {
+            clearTimeout(timer);
+            triggerEvent('testDone', test);
+            test.doneCallbacks.forEach(function(c){
+              c(test);
+            });
+        };
+        var timer = setTimeout(function(){
+            triggerEvent('testTimeout', test);
+        }, config.timeout);
+        try {
+            this.testFunction.call(this, done);
+        } catch(error) {
+            this.flunk(error.toString(), {error: error, test: this});
+        }
     };
     Test.prototype.assert = function(condition) {
         var a = new Assertion(this, 'assert', [condition], function() {
@@ -81,12 +127,47 @@ module.exports = (function(config){
             triggerEvent('assertionFailed', {context: this.context});
         }
     };
-
-    test.flunk = function(message, options) {
+    Test.prototype.flunk = function(message, options) {
         options = options ? options : {};
-        triggerEvent('testFlunk', {context: copyContext(), message: message, options: options});
+        triggerEvent('testFlunk', {context: this.context, message: message, options: options});
     };
 
+    var Context = function(name, parentContext) {
+      this.name = name;
+      this.parentContext = parentContext;
+      this.subContexts = [];
+      this.tests = [];
+    };
+    Context.prototype.context = function(name, callback) {
+      var ctx = new Context(name, this);
+      this.subContexts.push(ctx);
+      triggerEvent('pushContext', {name: name, context: ctx});
+      callback.apply(ctx);
+      triggerEvent('popContext', {name: name, context: ctx});
+    };
+    Context.prototype.it = function(name, callback) {
+      this.tests.push(new Test(this, name, callback));
+    };
+    Context.prototype._depth = function() {
+      var parent = this;
+      var i = 0;
+      while(parent) {
+        parent = parent.parentContext;
+        i++;
+      }
+      return i;
+    };
+
+    var topLevelContexts = [];
+
+    test.context = function(name, callback) {
+      var ctx = new Context(name, null);
+      topLevelContexts.push(ctx);
+      triggerEvent('pushContext', {name: name, context: ctx});
+      callback.apply(ctx);
+      triggerEvent('popContext', {name: name, context: ctx});
+    };
+  /*
     test.context = function(name, callback) {
         contextStack.push(name);
         triggerEvent('pushContext', {name: name, context: copyContext()});
@@ -111,8 +192,10 @@ module.exports = (function(config){
             test.flunk(error.toString(), {error: error, test: t});
         }
     };
+    */
 
     /* patch sequential behaviour into it() */
+    /*
     (function(originalTestIt){
         var queue = [];
         var begun = false;
@@ -154,9 +237,10 @@ module.exports = (function(config){
 
 
     })(test.it);
+    */
 
     test.anyFailures = function() {
-        return true;
+        return true; // TODO: not implemented
     };
 
     test.onFailureExitNonZero = function() {
