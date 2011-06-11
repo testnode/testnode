@@ -239,15 +239,18 @@ module.exports = (function(config){
     })(test.it);
     */
 
-    test.anyFailures = function() {
-        return true; // TODO: not implemented
+    var seen = false;
+    var seenFailure = function() {
+      seen = true;
     };
+    test.on('assertionFailed', seenFailure);
+    test.on('testFlunk', seenFailure);
 
     test.onFailureExitNonZero = function() {
         process.on('exit', function(a) {
-            if (test.anyFailures()) {
+            if (seen) {
                 /* Hack */
-                process.kill(process.pid, 'SIGTERM');
+                process.kill(process.pid, 'SIGHUP');
             }
         });
     };
