@@ -6,8 +6,6 @@ module.exports = (function(config){
     var sys = require('sys');
 
     if (!config.timeout) config.timeout = 4000;
-    // Whether to run the tests sequentially. If false, output will be screwy.
-    config.sequential = true;
 
     var eventListeners = {};
     var triggerEvent = function(eventName) {
@@ -167,77 +165,6 @@ module.exports = (function(config){
       callback.apply(ctx);
       triggerEvent('popContext', {name: name, context: ctx});
     };
-  /*
-    test.context = function(name, callback) {
-        contextStack.push(name);
-        triggerEvent('pushContext', {name: name, context: copyContext()});
-        callback();
-        contextStack.pop();
-        triggerEvent('popContext', {name: name, context: copyContext()});
-    };
-    test.it = function(name, callback) {
-        var t = arguments[2] || new Test(copyContext(), name);
-        triggerEvent('testStarted', t);
-        var done = function() {
-            clearTimeout(timer);
-            triggerEvent('testDone', t);
-            triggerEvent('testDone2', t);
-        };
-        var timer = setTimeout(function(){
-            triggerEvent('testTimeout', t);
-        }, config.timeout);
-        try {
-            callback.call(t, done);
-        } catch(error) {
-            test.flunk(error.toString(), {error: error, test: t});
-        }
-    };
-    */
-
-    /* patch sequential behaviour into it() */
-    /*
-    (function(originalTestIt){
-        var queue = [];
-        var begun = false;
-        var waitingTakes = 0;
-        var take = function() {
-            var first = queue[0];
-            queue = queue.slice(1);
-            originalTestIt(first[0], first[1], first[2]);
-        };
-        var put = function(a) {
-            queue.push(a);
-            if (waitingTakes) {
-                waitingTakes = 0;
-                take();
-            }
-        };
-        var takeLater = function() {
-            waitingTakes++;
-        };
-        test.it = function(name, callback) {
-            if (!begun) {
-                begun = true;
-                takeLater();
-            }
-            var t = new Test(copyContext(), name);
-            put([name, callback, t]);
-        };
-        test.on('testDone2', function(t){
-            if (queue.length > 0) {
-                take();
-            } else {
-                takeLater();
-            }
-        });
-
-        test.on('popContext', function(o){
-            return false;
-        });
-
-
-    })(test.it);
-    */
 
     var seen = false;
     var seenFailure = function() {
