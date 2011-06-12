@@ -1,7 +1,11 @@
 {
-  "name": "NoodleTest",
+  "name": "noodle-test",
   "description": "Testing library for Node",
   "version": "0.0.0",
+  "dependencies" : {
+    "glob": "",
+    "ansi-color": ""
+  },
   "repository": {
     "url": ""
   },
