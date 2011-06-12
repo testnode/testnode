@@ -1,10 +1,11 @@
 module.exports = (function(){
   var sys = require('sys');
-  function Assertion(testCase, assertMethod, args, tester) {
+  function Assertion(testCase, assertMethod, args, tester, failureMessageFunction) {
       this.testCase = testCase;
       this.assertMethod = assertMethod;
       this.args = args;
       this.tester = tester;
+      this.failureMessageFunction = failureMessageFunction;
       this.passed = null;
       var numberOfStackLinesToSkip = 1 /* First line which is just the name of the fake error we created: "Error" */
                                    + 1 /* Call to here */
@@ -17,10 +18,10 @@ module.exports = (function(){
       this.passed = !!this.tester();
   };
   Assertion.prototype.failureMessage = function() {
-      return "Expected first argument to evaluate to true";
+    return this.failureMessageFunction(this.args);
   };
   Assertion.prototype.callString = function() {
-      return this.assertMethod + '(' + sys.inspect(this.args[0]) + ')'
+      return this.assertMethod;
   };
   return Assertion;
 })();

@@ -7,6 +7,7 @@ doSomethingAsychronously(function() {
             this.it("should do something", function(done) {
                 this.assert(true);
                 this.assert(false);
+                this.assertEqual("123", 135);
                 //done();
                 setTimeout(done, 1000);
             });

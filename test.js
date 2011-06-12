@@ -33,6 +33,23 @@ module.exports = (function(Assertion, testQueue, timeout){
   Test.prototype.assert = function(condition) {
       var a = new Assertion(this, 'assert', [condition], function() {
           return condition;
+      }, function(args) {
+        return "Expected first argument to evaluate to true";
+      });
+      a.execute();
+      if (a.passed) {
+          this.passes.push(a);
+          this.emit('assertionPassed', {context: this.context});
+      } else {
+          this.failures.push(a);
+          this.emit('assertionFailed', {context: this.context});
+      }
+  };
+  Test.prototype.assertEqual = function(expected, actual) {
+      var a = new Assertion(this, 'assertEqual', [expected, actual], function() {
+          return expected == actual;
+      }, function(args) {
+        return "Expected " + sys.inspect(expected) + ", but got " + sys.inspect(actual);
       });
       a.execute();
       if (a.passed) {
