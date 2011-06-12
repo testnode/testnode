@@ -1,0 +1,16 @@
+{
+  "name": "NoodleTest",
+  "description": "Testing library for Node",
+  "version": "0.0.0",
+  "repository": {
+    "url": ""
+  },
+  "author": "Joel Plane <joel@avial.com.au>",
+  "main": "noodleTest.js",
+  "directories": {
+    "lib": "."
+  },
+  "engines": {
+    "node": "*"
+  }
+}
