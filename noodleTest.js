@@ -6,7 +6,8 @@ module.exports = (function(config){
     var events = require('./events');
     var EventEmitter = events.EventEmitter;
     var sys = require('sys');
-    var cons = require('./noodleTestConsole');
+    var addConsoleOutputConcerns = require('./noodleTestConsole');
+    var addSystemConcerns = require('./system');
     var Assertion = require('./assertion');
     var testQueue = require('./testQueue')();
     var Test = require('./test')(Assertion, testQueue, config.timeout);
@@ -31,24 +32,9 @@ module.exports = (function(config){
       main.emit('popContext', {name: name, context: ctx});
     };
 
-    var seen = false;
-    var seenFailure = function() {
-      seen = true;
-    };
-    main.on('assertionFailed', seenFailure);
-    main.on('testFlunk', seenFailure);
-
-    main.onFailureExitNonZero = function() {
-        process.on('exit', function(a) {
-            if (seen) {
-                /* Hack */
-                process.kill(process.pid, 'SIGHUP');
-            }
-        });
-    };
-
+    addSystemConcerns(main);
     if (!config['quiet']) {
-      cons(main);
+      addConsoleOutputConcerns(main);
     }
 
     return main;
