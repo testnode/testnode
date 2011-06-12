@@ -1,5 +1,6 @@
 module.exports = (function(){
   var sys = require('sys');
+  var events = require('./events');
   function Assertion(testCase, assertMethod, args, tester, failureMessageFunction) {
       this.testCase = testCase;
       this.assertMethod = assertMethod;
@@ -23,5 +24,14 @@ module.exports = (function(){
   Assertion.prototype.callString = function() {
       return this.assertMethod;
   };
+
+  events.classEvents(Assertion);
+  Assertion.assertions = [];
+  Assertion.addAssertion = function(methodName, assertionFunction, failureMessageFunction) {
+    var a = {methodName: methodName, assertionFunction: assertionFunction, failureMessageFunction: failureMessageFunction};
+    Assertion.assertions.push(a);
+    Assertion.emit('assertionAdded', a);
+  };
+
   return Assertion;
 })();

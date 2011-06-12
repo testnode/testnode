@@ -30,6 +30,7 @@ module.exports = (function(Assertion, testQueue, timeout){
           this.flunk(error.toString(), {error: error, test: this});
       }
   };
+  /*
   Test.prototype.assert = function(condition) {
       var a = new Assertion(this, 'assert', [condition], function() {
           return condition;
@@ -60,9 +61,33 @@ module.exports = (function(Assertion, testQueue, timeout){
           this.emit('assertionFailed', {context: this.context});
       }
   };
+  */
   Test.prototype.flunk = function(message, options) {
       options = options ? options : {};
       this.emit('testFlunk', {context: this.context, message: message, options: options});
   };
+
+  Assertion.on('assertionAdded', function(definition){
+    var methodName = definition['methodName'];
+    var assertionFunction = definition['assertionFunction'];
+    var failureMessageFunction = definition['failureMessageFunction'];
+    Test.prototype[methodName] = function() {
+      var args = arguments;
+      var a = new Assertion(this, methodName, args, function() {
+          return assertionFunction.apply(this, args);
+      }, function() {
+        return failureMessageFunction.apply(this, args);
+      });
+      a.execute();
+      if (a.passed) {
+          this.passes.push(a);
+          this.emit('assertionPassed', {context: this.context});
+      } else {
+          this.failures.push(a);
+          this.emit('assertionFailed', {context: this.context});
+      }
+    }
+  });
+
   return Test;
 });

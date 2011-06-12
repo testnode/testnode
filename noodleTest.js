@@ -11,6 +11,7 @@ module.exports = (function(config){
     var Assertion = require('./assertion');
     var testQueue = require('./testQueue')();
     var Test = require('./test')(Assertion, testQueue, config.timeout);
+    require('./assertions')(Assertion);
     var Context = require('./context')(Test);
     var main = new EventEmitter();
 
