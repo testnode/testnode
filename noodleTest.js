@@ -1,6 +1,7 @@
 /* ansi-color */
 module.exports = (function(config){
-    var EventEmitter = require('events').EventEmitter;
+    var events = require('./events');
+    var EventEmitter = events.EventEmitter;
     var cons = require('./noodleTestConsole');
     if (!config) config = {};
     var main = new EventEmitter();
@@ -60,36 +61,14 @@ module.exports = (function(config){
 
     /* Relay events emitted by Test instances to the main object */
     Test.on('new', function(t){
-      t.on('assertionPassed', function(o){
-        main.emit('assertionPassed', o);
-      });
-      t.on('assertionFailed', function(o){
-        main.emit('assertionFailed', o);
-      });
-      t.on('testFlunk', function(o){
-        main.emit('testFlunk', o);
-      });
-      t.on('testStarted', function(o){
-        main.emit('testStarted', o);
-      });
-      t.on('testTimeout', function(o){
-        main.emit('testTimeout', o);
-      });
-      t.on('testDone', function(o){
-        main.emit('testDone', o);
-      });
+      events.relayEvents(t, main, ['assertionPassed', 'assertionFailed', 'testFlunk', 'testStarted', 'testTimeout', 'testDone']);
     });
 
     var Context = require('./context')(Test);
 
     /* Relay events emitted by Context instances to the main object */
     Context.on('new', function(ctx){
-      ctx.on('pushContext', function(o){
-        main.emit('pushContext', o);
-      });
-      ctx.on('popContext', function(o){
-        main.emit('popContext', o);
-      });
+      events.relayEvents(ctx, main, ['pushContext', 'popContext']);
     });
 
     var topLevelContexts = [];

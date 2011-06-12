@@ -1,5 +1,6 @@
 module.exports = (function(Test){
-  var EventEmitter = require('events').EventEmitter;
+  var events = require('./events');
+  var EventEmitter = events.EventEmitter;
   var sys = require('sys');
   function Context(name, parentContext) {
     this.name = name;

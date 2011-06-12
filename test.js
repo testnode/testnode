@@ -1,5 +1,6 @@
 module.exports = (function(Assertion, testQueue, config){
-  var EventEmitter = require('events').EventEmitter;
+  var events = require('./events');
+  var EventEmitter = events.EventEmitter;
   var sys = require('sys');
   var Test = function(context, name, testFunction) {
       this.context = context;
