@@ -46,7 +46,7 @@ module.exports = (function(config){
           if (q.array.length > 0) {
             var top = q.array[0];
             q.array = q.array.slice(1);
-            top.onDone(function(){
+            top.on('done', function(){
               q.next();
             });
             top._call();
@@ -63,22 +63,17 @@ module.exports = (function(config){
         this.testFunction = testFunction;
         this.failures = [];
         this.passes = [];
-        this.doneCallbacks = [];
         testQueue.put(this);
-        //this._call();
+        EventEmitter.call(this);
     };
-    Test.prototype.onDone = function(callback) {
-      this.doneCallbacks.push(callback);
-    };
+    sys.inherits(Test, EventEmitter);
     Test.prototype._call = function() {
         var test = this;
         main.emit('testStarted', this);
         var done = function() {
             clearTimeout(timer);
             main.emit('testDone', test);
-            test.doneCallbacks.forEach(function(c){
-              c(test);
-            });
+            test.emit('done', test);
         };
         var timer = setTimeout(function(){
             main.emit('testTimeout', test);
