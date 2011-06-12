@@ -11,16 +11,7 @@ module.exports = (function(Test){
     Context.emit('new', this);
   }
   sys.inherits(Context, EventEmitter);
-  /* class-level event emitter for Context class */
-  (function(){
-    var emitter = new EventEmitter();
-    Context.on = function(eventName, callback) {
-      emitter.on(eventName, callback);
-    };
-    Context.emit = function(eventName, object) {
-      emitter.emit(eventName, object);
-    };
-  })();
+  events.classEvents(Context);
   Context.prototype.context = function(name, callback) {
     var ctx = new Context(name, this);
     this.subContexts.push(ctx);

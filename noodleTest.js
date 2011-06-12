@@ -36,7 +36,7 @@ module.exports = (function(config){
         return q;
     })();
 
-    var Test = require('./test')(Assertion, testQueue, config);
+    var Test = require('./test')(Assertion, testQueue, config.timeout);
 
     /* Relay events emitted by Test instances to the main object */
     Test.on('new', function(t){

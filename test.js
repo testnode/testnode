@@ -1,4 +1,4 @@
-module.exports = (function(Assertion, testQueue, config){
+module.exports = (function(Assertion, testQueue, timeout){
   var events = require('./events');
   var EventEmitter = events.EventEmitter;
   var sys = require('sys');
@@ -13,16 +13,7 @@ module.exports = (function(Assertion, testQueue, config){
       testQueue.put(this);
   };
   sys.inherits(Test, EventEmitter);
-  /* class-level event emitter for Test class */
-  (function(){
-    var emitter = new EventEmitter();
-    Test.on = function(eventName, callback) {
-      emitter.on(eventName, callback);
-    };
-    Test.emit = function(eventName, object) {
-      emitter.emit(eventName, object);
-    };
-  })();
+  events.classEvents(Test);
   Test.prototype._call = function() {
       var test = this;
       this.emit('testStarted', this);
@@ -32,7 +23,7 @@ module.exports = (function(Assertion, testQueue, config){
       };
       var timer = setTimeout(function(){
           test.emit('testTimeout', test);
-      }, config.timeout);
+      }, timeout);
       try {
           this.testFunction.call(this, done);
       } catch(error) {

@@ -7,8 +7,19 @@ module.exports = (function(){
       });
     });
   };
+  var classEvents = function(klass) {
+    /* class-level event emitter */
+    var emitter = new EventEmitter();
+    klass.on = function(eventName, callback) {
+      emitter.on(eventName, callback);
+    };
+    klass.emit = function(eventName, object) {
+      emitter.emit(eventName, object);
+    };
+  };
   return {
     EventEmitter: EventEmitter,
-    relayEvents: relayEvents
+    relayEvents: relayEvents,
+    classEvents: classEvents
   };
 })();
