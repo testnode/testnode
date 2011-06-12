@@ -120,6 +120,43 @@ test.context("NoodleTest dogfood test", function() {
           });
 
       });
+
+      this.it("assertArrayEqual will pass when given equal arrays", function(done) {
+          this.assertArrayEqual([1,'2'], [1,'2']);
+          this.assertArrayEqual([1,'2',[3,'4']], [1,'2',[3,'4']]);
+          done();
+      });
+
+      this.it("assertArrayEqual will fail when given inequal arrays", function(done) {
+          var myThis = this;
+
+          var failed = false;
+          var finish = function() {
+            clearTimeout(timer);
+            myThis.assert(failed);
+            done();
+          };
+
+          var t = require('../noodleTest')({quiet: true});
+          t.on('assertionFailed', function() {
+            failed = true;
+            finish();
+          });
+          t.on('assertionPassed', function() {
+            finish();
+          });
+          var timer = setTimeout(function(){
+            finish();
+          },200);
+          t.context('test context', function() {
+            this.it('test test', function(done2){
+              this.assertArrayEqual([1,'2',[3,'4']], [1,'2',[3,'5']]);
+              done2();
+            });
+          });
+
+      });
+
     });
 
     this.context('Stack trace', function() {
