@@ -5,7 +5,6 @@ module.exports = (function(config){
     if (!config) config = {};
     var main = new EventEmitter();
     var sys = require('sys');
-
     if (!config.timeout) config.timeout = 4000;
 
     var Assertion = function(testCase, assertMethod, args, tester) {
@@ -63,20 +62,31 @@ module.exports = (function(config){
         this.testFunction = testFunction;
         this.failures = [];
         this.passes = [];
-        testQueue.put(this);
         EventEmitter.call(this);
+        Test.emit('new', this);
+        testQueue.put(this);
     };
     sys.inherits(Test, EventEmitter);
+    /* class-level event emitter for Test class */
+    (function(){
+      var emitter = new EventEmitter();
+      Test.on = function(eventName, callback) {
+        emitter.on(eventName, callback);
+      };
+      Test.emit = function(eventName, object) {
+        emitter.emit(eventName, object);
+      };
+    })();
     Test.prototype._call = function() {
         var test = this;
-        main.emit('testStarted', this);
+        this.emit('testStarted', this);
         var done = function() {
             clearTimeout(timer);
-            main.emit('testDone', test);
+            test.emit('testDone', test); /////
             test.emit('done', test);
         };
         var timer = setTimeout(function(){
-            main.emit('testTimeout', test);
+            test.emit('testTimeout', test);
         }, config.timeout);
         try {
             this.testFunction.call(this, done);
@@ -91,16 +101,38 @@ module.exports = (function(config){
         a.execute();
         if (a.passed) {
             this.passes.push(a);
-            main.emit('assertionPassed', {context: this.context});
+            this.emit('assertionPassed', {context: this.context});
         } else {
             this.failures.push(a);
-            main.emit('assertionFailed', {context: this.context});
+            this.emit('assertionFailed', {context: this.context});
         }
     };
     Test.prototype.flunk = function(message, options) {
         options = options ? options : {};
-        main.emit('testFlunk', {context: this.context, message: message, options: options});
+        this.emit('testFlunk', {context: this.context, message: message, options: options});
     };
+
+    /* Relay events emitted by Test instances to the main object */
+    Test.on('new', function(t){
+      t.on('assertionPassed', function(o){
+        main.emit('assertionPassed', o);
+      });
+      t.on('assertionFailed', function(o){
+        main.emit('assertionFailed', o);
+      });
+      t.on('testFlunk', function(o){
+        main.emit('testFlunk', o);
+      });
+      t.on('testStarted', function(o){
+        main.emit('testStarted', o);
+      });
+      t.on('testTimeout', function(o){
+        main.emit('testTimeout', o);
+      });
+      t.on('testDone', function(o){
+        main.emit('testDone', o);
+      });
+    });
 
     var Context = require('./context')(Test);
 
