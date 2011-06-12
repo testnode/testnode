@@ -1,4 +1,4 @@
-var test = require('./noodleTest')();
+var test = require('../noodleTest')();
 test.onFailureExitNonZero();
 
 doSomethingAsychronously(function() {
