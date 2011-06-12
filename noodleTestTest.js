@@ -1,5 +1,6 @@
 var test = require('./noodleTest')();
 var EventEmitter = require('events').EventEmitter;
+var sys = require('sys');
 test.onFailureExitNonZero();
 
 test.context("NoodleTest dogfood test", function() {
@@ -96,6 +97,27 @@ test.context("NoodleTest dogfood test", function() {
           });
         });
 
+    });
+
+    this.context('stack trace', function() {
+      this.it("should be trimmed such that the first line is the client code", function(done) {
+          var myThis = this;
+
+          var t = require('./noodleTest')({quiet: true});
+          t.context('test context', function() {
+            this.it('test test', function(done2){
+              this.assert(false);
+
+              var firstStackLine = this.failures[0].stack[0];
+              // client's test function will be called "testFunction" in the stack trace
+              myThis.assert(firstStackLine.indexOf('.testFunction'));
+
+              done2();
+              done();
+            });
+          });
+
+      });
     });
 
 });
