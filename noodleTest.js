@@ -45,7 +45,7 @@ module.exports = (function(config){
           if (q.array.length > 0) {
             var top = q.array[0];
             q.array = q.array.slice(1);
-            top.on('done', function(){
+            top.on('testDone', function(){
               q.next();
             });
             top._call();
@@ -82,8 +82,7 @@ module.exports = (function(config){
         this.emit('testStarted', this);
         var done = function() {
             clearTimeout(timer);
-            test.emit('testDone', test); /////
-            test.emit('done', test);
+            test.emit('testDone', test);
         };
         var timer = setTimeout(function(){
             test.emit('testTimeout', test);
