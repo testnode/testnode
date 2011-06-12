@@ -1,42 +1,16 @@
 /* ansi-color */
 module.exports = (function(config){
-    var events = require('./events');
-    var EventEmitter = events.EventEmitter;
-    var cons = require('./noodleTestConsole');
     if (!config) config = {};
-    var main = new EventEmitter();
-    var sys = require('sys');
     if (!config.timeout) config.timeout = 4000;
 
+    var events = require('./events');
+    var EventEmitter = events.EventEmitter;
+    var sys = require('sys');
+    var cons = require('./noodleTestConsole');
     var Assertion = require('./assertion');
-
-    var testQueue = (function() {
-        var begun = false;
-        var q = {};
-        q.array = [];
-        q.put = function(test) {
-          q.array.push(test);
-          if (!begun) {
-            begun = true;
-            q.next();
-          }
-        };
-        q.next = function() {
-          if (q.array.length > 0) {
-            var top = q.array[0];
-            q.array = q.array.slice(1);
-            top.on('testDone', function(){
-              q.next();
-            });
-            top._call();
-          } else {
-            begun = false;
-          }
-        };
-        return q;
-    })();
-
+    var testQueue = require('./testQueue')();
     var Test = require('./test')(Assertion, testQueue, config.timeout);
+    var main = new EventEmitter();
 
     /* Relay events emitted by Test instances to the main object */
     Test.on('new', function(t){
