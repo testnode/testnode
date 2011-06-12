@@ -107,13 +107,26 @@ module.exports = (function(config){
       this.parentContext = parentContext;
       this.subContexts = [];
       this.tests = [];
+      EventEmitter.call(this);
+      Context.emit('new', this);
     };
+    sys.inherits(Context, EventEmitter);
+    /* class-level event emitter for Context class */
+    (function(){
+      var emitter = new EventEmitter();
+      Context.on = function(eventName, callback) {
+        emitter.on(eventName, callback);
+      };
+      Context.emit = function(eventName, object) {
+        emitter.emit(eventName, object);
+      };
+    })();
     Context.prototype.context = function(name, callback) {
       var ctx = new Context(name, this);
       this.subContexts.push(ctx);
-      main.emit('pushContext', {name: name, context: ctx});
+      this.emit('pushContext', {name: name, context: ctx});
       callback.apply(ctx);
-      main.emit('popContext', {name: name, context: ctx});
+      this.emit('popContext', {name: name, context: ctx});
     };
     Context.prototype.it = function(name, callback) {
       this.tests.push(new Test(this, name, callback));
@@ -127,6 +140,16 @@ module.exports = (function(config){
       }
       return i;
     };
+
+    /* Relay events emitted by Context instances to the main object */
+    Context.on('new', function(ctx){
+      ctx.on('pushContext', function(o){
+        main.emit('pushContext', o);
+      });
+      ctx.on('popContext', function(o){
+        main.emit('popContext', o);
+      });
+    });
 
     var topLevelContexts = [];
 
