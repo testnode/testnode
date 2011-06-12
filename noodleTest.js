@@ -1,35 +1,12 @@
 /* ansi-color */
 module.exports = (function(config){
+    var EventEmitter = require('events').EventEmitter;
     var cons = require('./noodleTestConsole');
     if (!config) config = {};
-    var test = {};
+    var main = new EventEmitter();
     var sys = require('sys');
 
     if (!config.timeout) config.timeout = 4000;
-
-    var eventListeners = {};
-    var triggerEvent = function(eventName) {
-        var args = arguments;
-        if (eventListeners[eventName]) {
-            var Break = {};
-            try {
-                eventListeners[eventName].forEach(function(callback){
-                    var result = callback.apply(test, [].slice.call(args, 1));
-                    if (result === false) {
-                        throw Break;
-                    }
-                });
-            } catch(e) {
-                if (e!==Break) throw e;
-            }
-        }
-    };
-    test.on = function(eventName, callback) {
-        if (!eventListeners[eventName]) {
-            eventListeners[eventName] = [];
-        }
-        eventListeners[eventName].push(callback);
-    };
 
     var Assertion = function(testCase, assertMethod, args, tester) {
         this.testCase = testCase;
@@ -95,16 +72,16 @@ module.exports = (function(config){
     };
     Test.prototype._call = function() {
         var test = this;
-        triggerEvent('testStarted', this);
+        main.emit('testStarted', this);
         var done = function() {
             clearTimeout(timer);
-            triggerEvent('testDone', test);
+            main.emit('testDone', test);
             test.doneCallbacks.forEach(function(c){
               c(test);
             });
         };
         var timer = setTimeout(function(){
-            triggerEvent('testTimeout', test);
+            main.emit('testTimeout', test);
         }, config.timeout);
         try {
             this.testFunction.call(this, done);
@@ -119,15 +96,15 @@ module.exports = (function(config){
         a.execute();
         if (a.passed) {
             this.passes.push(a);
-            triggerEvent('assertionPassed', {context: this.context});
+            main.emit('assertionPassed', {context: this.context});
         } else {
             this.failures.push(a);
-            triggerEvent('assertionFailed', {context: this.context});
+            main.emit('assertionFailed', {context: this.context});
         }
     };
     Test.prototype.flunk = function(message, options) {
         options = options ? options : {};
-        triggerEvent('testFlunk', {context: this.context, message: message, options: options});
+        main.emit('testFlunk', {context: this.context, message: message, options: options});
     };
 
     var Context = function(name, parentContext) {
@@ -139,9 +116,9 @@ module.exports = (function(config){
     Context.prototype.context = function(name, callback) {
       var ctx = new Context(name, this);
       this.subContexts.push(ctx);
-      triggerEvent('pushContext', {name: name, context: ctx});
+      main.emit('pushContext', {name: name, context: ctx});
       callback.apply(ctx);
-      triggerEvent('popContext', {name: name, context: ctx});
+      main.emit('popContext', {name: name, context: ctx});
     };
     Context.prototype.it = function(name, callback) {
       this.tests.push(new Test(this, name, callback));
@@ -158,22 +135,22 @@ module.exports = (function(config){
 
     var topLevelContexts = [];
 
-    test.context = function(name, callback) {
+    main.context = function(name, callback) {
       var ctx = new Context(name, null);
       topLevelContexts.push(ctx);
-      triggerEvent('pushContext', {name: name, context: ctx});
+      main.emit('pushContext', {name: name, context: ctx});
       callback.apply(ctx);
-      triggerEvent('popContext', {name: name, context: ctx});
+      main.emit('popContext', {name: name, context: ctx});
     };
 
     var seen = false;
     var seenFailure = function() {
       seen = true;
     };
-    test.on('assertionFailed', seenFailure);
-    test.on('testFlunk', seenFailure);
+    main.on('assertionFailed', seenFailure);
+    main.on('testFlunk', seenFailure);
 
-    test.onFailureExitNonZero = function() {
+    main.onFailureExitNonZero = function() {
         process.on('exit', function(a) {
             if (seen) {
                 /* Hack */
@@ -183,8 +160,8 @@ module.exports = (function(config){
     };
 
     if (!config['quiet']) {
-      cons(test);
+      cons(main);
     }
 
-    return test;
+    return main;
 });
