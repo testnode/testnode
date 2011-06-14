@@ -12,12 +12,16 @@ module.exports = function(main) {
     main.on('assertionFailed', seenFailureCallback);
     main.on('testFlunk', seenFailureCallback);
 
+    var calledOnFailureExitNonZero = false;
     main.onFailureExitNonZero = function() {
-        process.on('exit', function(a) {
-            if (seenFailure) {
-                /* Hack */
-                process.kill(process.pid, 'SIGHUP');
-            }
-        });
+        if (!calledOnFailureExitNonZero) {
+          calledOnFailureExitNonZero = true;
+          process.on('exit', function(a) {
+              if (seenFailure) {
+                  /* Hack */
+                  process.kill(process.pid, 'SIGHUP');
+              }
+          });
+        }
     };
 };

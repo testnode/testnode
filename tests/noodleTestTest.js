@@ -5,6 +5,23 @@ test.onFailureExitNonZero();
 
 test.context("NoodleTest dogfood test", function() {
 
+    this.context('Environment', function() {
+      this.context('instantiation', function() {
+        this.it('should return the same instance when given the same config', function() {
+          var t1 = require('../noodleTest')({quiet: true});
+          var t2 = require('../noodleTest')({quiet: true});
+          this.assertEqual(t1, t2);
+          this.done();
+        });
+        this.it('should return a different instance when given different configs', function() {
+          var t1 = require('../noodleTest')({quiet: true, timeout: 1000});
+          var t2 = require('../noodleTest')({quiet: true});
+          this.assertNotEqual(t1, t2);
+          this.done();
+        });
+      });
+    });
+
     this.context('Basic Execution', function() {
       this.it("should call the first context callback", function(outerTest) {
           var t = require('../noodleTest')({quiet: true});
