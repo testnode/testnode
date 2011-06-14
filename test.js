@@ -3,12 +3,17 @@ module.exports = (function(Assertion, testQueue, timeout){
   var EventEmitter = events.EventEmitter;
   var sys = require('sys');
   var Test = function(context, name, testFunction) {
-      this.context = context;
-      this.name = name;
-      this.testFunction = testFunction;
-      this.failures = [];
-      this.passes = [];
+      this._context = context;
+      this._name = name;
+      this._testFunction = testFunction;
+      this._failures = [];
+      this._passes = [];
       EventEmitter.call(this);
+
+      /* Rename emit() method from EventEmitter to indicate that it is private */
+      this._emit = this.emit;
+      delete this['emit'];
+
       Test.emit('new', this);
       testQueue.put(this);
   };
@@ -16,23 +21,23 @@ module.exports = (function(Assertion, testQueue, timeout){
   events.classEvents(Test);
   Test.prototype._call = function() {
       var test = this;
-      this.emit('testStarted', this);
+      this._emit('testStarted', this);
       this.done = function() {
           clearTimeout(timer);
-          test.emit('testDone', test);
+          test._emit('testDone', test);
       };
       var timer = setTimeout(function(){
-          test.emit('testTimeout', test);
+          test._emit('testTimeout', test);
       }, timeout);
       try {
-          this.testFunction.call(this, this);
+          this._testFunction.call(this, this);
       } catch(error) {
           this.flunk(error.toString(), {error: error, test: this});
       }
   };
   Test.prototype.flunk = function(message, options) {
       options = options ? options : {};
-      this.emit('testFlunk', {context: this.context, message: message, options: options});
+      this._emit('testFlunk', {context: this._context, message: message, options: options});
   };
 
   Assertion.on('assertionAdded', function(definition){
@@ -48,11 +53,11 @@ module.exports = (function(Assertion, testQueue, timeout){
       });
       a.execute();
       if (a.passed) {
-          this.passes.push(a);
-          this.emit('assertionPassed', {context: this.context});
+          this._passes.push(a);
+          this._emit('assertionPassed', {context: this._context});
       } else {
-          this.failures.push(a);
-          this.emit('assertionFailed', {context: this.context});
+          this._failures.push(a);
+          this._emit('assertionFailed', {context: this._context});
       }
     }
   });

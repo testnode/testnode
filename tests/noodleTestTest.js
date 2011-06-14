@@ -72,8 +72,8 @@ test.context("NoodleTest dogfood test", function() {
           var t = require('../noodleTest')({quiet: true});
 
           ee.on('setupDone', function(test){
-            outerTest.assert(test.failures.length > 0);
-            outerTest.assert(test.passes.length == 0);
+            outerTest.assert(test._failures.length > 0);
+            outerTest.assert(test._passes.length == 0);
             outerTest.done();
           });
 
@@ -156,9 +156,9 @@ test.context("NoodleTest dogfood test", function() {
             this.it('test test', function(innerTest){
               innerTest.assert(false);
 
-              var firstStackLine = innerTest.failures[0].stack[0];
+              var firstStackLine = innerTest._failures[0].stack[0];
               // client's test function will be called "testFunction" in the stack trace
-              outerTest.assert(firstStackLine.indexOf('.testFunction'));
+              outerTest.assert(firstStackLine.indexOf('._testFunction'));
 
               innerTest.done();
               outerTest.done();
