@@ -29,7 +29,7 @@ module.exports = (function(config){
       var ctx = new Context(name, null);
       topLevelContexts.push(ctx);
       main.emit('pushContext', {name: name, context: ctx});
-      callback.apply(ctx);
+      callback.call(ctx, ctx);
       main.emit('popContext', {name: name, context: ctx});
     };
 

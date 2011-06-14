@@ -4,14 +4,14 @@ test.onFailureExitNonZero();
 doSomethingAsychronously(function() {
    test.context("Message", function() {
         this.context("NullMessage", function() {
-            this.it("should do something", function(done) {
+            this.it("should do something", function() {
                 this.assert(true);
                 this.assert(false);
                 this.assertEqual("123", 135);
                 //done();
-                setTimeout(done, 1000);
+                setTimeout(this.done, 1000);
             });
-            this.it("should do something 2", function(done) {
+            this.it("should do something 2", function() {
                 var t = this;
                 setTimeout(function(){
                   t.assert(true);
@@ -19,16 +19,16 @@ doSomethingAsychronously(function() {
                     t.assert(true);
                     setTimeout(function(){
                       t.assert(true);
-                      setTimeout(done, 900);
+                      setTimeout(t.done, 900);
                     },900);
                   },900);
                 },900);
             });
-            this.it("should do something else", function(done) {
+            this.it("should do something else", function() {
                 //this.assert(false);
                 this.assert(true);
                 this.assert(false);
-                done();
+                this.done();
             });
         });
    });

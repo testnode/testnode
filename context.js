@@ -16,7 +16,7 @@ module.exports = (function(Test){
     var ctx = new Context(name, this);
     this.subContexts.push(ctx);
     this.emit('pushContext', {name: name, context: ctx});
-    callback.apply(ctx);
+    callback.call(ctx, ctx);
     this.emit('popContext', {name: name, context: ctx});
   };
   Context.prototype.it = function(name, callback) {

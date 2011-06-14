@@ -6,63 +6,59 @@ test.onFailureExitNonZero();
 test.context("NoodleTest dogfood test", function() {
 
     this.context('Basic Execution', function() {
-      this.it("should call the first context callback", function(done) {
+      this.it("should call the first context callback", function(outerTest) {
           var t = require('../noodleTest')({quiet: true});
           t.context("test context", function() {
-            done();
-            this.it("test test", function(done2){
-              done2();
+            outerTest.done();
+            this.it("test test", function(innerTest){
+              innerTest.done();
             });
           });
       });
 
-      this.it("should call the first test callback", function(done) {
+      this.it("should call the first test callback", function(outerTest) {
 
           var t = require('../noodleTest')({quiet: true});
           t.context("test context", function() {
-            this.it("test test", function(done2){
-              done();
-              done2();
+            this.it("test test", function(innerTest){
+              outerTest.done();
+              innerTest.done();
             });
           });
 
       });
 
-      this.it("should call the second context callback after the first", function(done) {
-          var myThis = this;
-
-          var firstCalled = false;
+      this.it("should call the second context callback after the first", function(outerTest) {
+        var firstCalled = false;
           var t = require('../noodleTest')({quiet: true});
           t.context("test context", function() {
             firstCalled = true;
-            this.it("test1", function(done2){
-              done2();
+            this.it("test1", function(innerTest){
+              innerTest.done();
             });
           });
           t.context("test context", function() {
-            myThis.assert(firstCalled);
-            done();
-            this.it("test1", function(done2){
-              done2();
+            outerTest.assert(firstCalled);
+            outerTest.done();
+            this.it("test1", function(innerTest){
+              innerTest.done();
             });
           });
 
       });
 
-      this.it("should call the second test callback after the first", function(done) {
-          var myThis = this;
-
-          var firstCalled = false;
+      this.it("should call the second test callback after the first", function(outerTest) {
+        var firstCalled = false;
           var t = require('../noodleTest')({quiet: true});
           t.context("test context", function() {
-            this.it("test 1", function(done2){
+            this.it("test 1", function(innerTest){
               firstCalled = true;
-              done2();
+              innerTest.done();
             });
-            this.it("test 1", function(done2){
-              myThis.assert(firstCalled);
-              done();
-              done2();
+            this.it("test 1", function(innerTest){
+              outerTest.assert(firstCalled);
+              outerTest.done();
+              innerTest.done();
             });
           });
 
@@ -70,36 +66,32 @@ test.context("NoodleTest dogfood test", function() {
     });
 
     this.context('Assertions', function() {
-      this.it("should keep Assertion in test's failed array if an assertion fails", function(done) {
-          var myThis = this;
-
-          var ee = new EventEmitter();
+      this.it("should keep Assertion in test's failed array if an assertion fails", function(outerTest) {
+        var ee = new EventEmitter();
 
           var t = require('../noodleTest')({quiet: true});
 
           ee.on('setupDone', function(test){
-            myThis.assert(test.failures.length > 0);
-            myThis.assert(test.passes.length == 0);
-            done();
+            outerTest.assert(test.failures.length > 0);
+            outerTest.assert(test.passes.length == 0);
+            outerTest.done();
           });
 
           t.context("test context", function() {
-            this.it("test1", function(done2){
-              this.assert(false);
-              done2();
+            this.it("test1", function(innerTest){
+              innerTest.assert(false);
+              innerTest.done();
               ee.emit('setupDone', this);
             });
           });
 
       });
 
-      this.it("should emit assertionFailed event when an assertion fails", function(done) {
-          var myThis = this;
-
-          var seenAssertionFailedEvent = false;
+      this.it("should emit assertionFailed event when an assertion fails", function(outerTest) {
+        var seenAssertionFailedEvent = false;
           var finish = function() {
-            myThis.assert(seenAssertionFailedEvent);
-            done();
+            outerTest.assert(seenAssertionFailedEvent);
+            outerTest.done();
           };
 
           var t = require('../noodleTest')({quiet: true});
@@ -113,28 +105,26 @@ test.context("NoodleTest dogfood test", function() {
           });
 
           t.context("test context", function() {
-            this.it("test1", function(done2){
-              this.assert(false);
-              done2();
+            this.it("test1", function(innerTest){
+              innerTest.assert(false);
+              innerTest.done();
             });
           });
 
       });
 
-      this.it("assertArrayEqual will pass when given equal arrays", function(done) {
+      this.it("assertArrayEqual will pass when given equal arrays", function(test) {
           this.assertArrayEqual([1,'2'], [1,'2']);
           this.assertArrayEqual([1,'2',[3,'4']], [1,'2',[3,'4']]);
-          done();
+          test.done();
       });
 
-      this.it("assertArrayEqual will fail when given inequal arrays", function(done) {
-          var myThis = this;
-
-          var failed = false;
+      this.it("assertArrayEqual will fail when given inequal arrays", function(outerTest) {
+        var failed = false;
           var finish = function() {
             clearTimeout(timer);
-            myThis.assert(failed);
-            done();
+            outerTest.assert(failed);
+            outerTest.done();
           };
 
           var t = require('../noodleTest')({quiet: true});
@@ -149,9 +139,9 @@ test.context("NoodleTest dogfood test", function() {
             finish();
           },200);
           t.context('test context', function() {
-            this.it('test test', function(done2){
-              this.assertArrayEqual([1,'2',[3,'4']], [1,'2',[3,'5']]);
-              done2();
+            this.it('test test', function(innerTest){
+              innerTest.assertArrayEqual([1,'2',[3,'4']], [1,'2',[3,'5']]);
+              innerTest.done();
             });
           });
 
@@ -160,20 +150,18 @@ test.context("NoodleTest dogfood test", function() {
     });
 
     this.context('Stack trace', function() {
-      this.it("should be trimmed such that the first line is the client code", function(done) {
-          var myThis = this;
-
-          var t = require('../noodleTest')({quiet: true});
+      this.it("should be trimmed such that the first line is the client code", function(outerTest) {
+        var t = require('../noodleTest')({quiet: true});
           t.context('test context', function() {
-            this.it('test test', function(done2){
-              this.assert(false);
+            this.it('test test', function(innerTest){
+              innerTest.assert(false);
 
-              var firstStackLine = this.failures[0].stack[0];
+              var firstStackLine = innerTest.failures[0].stack[0];
               // client's test function will be called "testFunction" in the stack trace
-              myThis.assert(firstStackLine.indexOf('.testFunction'));
+              outerTest.assert(firstStackLine.indexOf('.testFunction'));
 
-              done2();
-              done();
+              innerTest.done();
+              outerTest.done();
             });
           });
 
