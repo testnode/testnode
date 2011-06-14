@@ -2,8 +2,8 @@ var test = require('../noodleTest')();
 test.onFailureExitNonZero();
 
 doSomethingAsychronously(function() {
-   test.context("Message", function() {
-        this.context("NullMessage", function(context) {
+   test.context("Example Test Suite", function() {
+        this.context("A Sub-Context in asyncExample.js", function(context) {
             doSomethingElseAsychronously(function() {
               context.it("should do something 1", function() {
                   this.assert(true);
