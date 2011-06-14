@@ -3,13 +3,14 @@ test.onFailureExitNonZero();
 
 doSomethingAsychronously(function() {
    test.context("Message", function() {
-        this.context("NullMessage", function() {
-            this.it("should do something", function() {
-                this.assert(true);
-                this.assert(false);
-                this.assertEqual("123", 135);
-                //done();
-                setTimeout(this.done, 1000);
+        this.context("NullMessage", function(context) {
+            doSomethingElseAsychronously(function() {
+              context.it("should do something 1", function() {
+                  this.assert(true);
+                  this.assert(false);
+                  this.assertEqual("123", 135);
+                  setTimeout(this.done, 1000);
+              });
             });
             this.it("should do something 2", function() {
                 var t = this;
@@ -19,13 +20,12 @@ doSomethingAsychronously(function() {
                     t.assert(true);
                     setTimeout(function(){
                       t.assert(true);
-                      setTimeout(t.done, 900);
-                    },900);
-                  },900);
-                },900);
+                      setTimeout(t.done, 600);
+                    },600);
+                  },600);
+                },600);
             });
             this.it("should do something else", function() {
-                //this.assert(false);
                 this.assert(true);
                 this.assert(false);
                 this.done();
@@ -35,9 +35,12 @@ doSomethingAsychronously(function() {
 });
 
 /*
- * This function is here just to demonstrate that it can asynchronisity.
- * For example, this could be loading dependencies that are needed to run the test.
+ * These functions are here to demonstrate that it can handle asynchronisity.
+ * For example, these could be loading dependencies that are needed to run the test.
  */
 function doSomethingAsychronously(callback) {
+    process.nextTick(callback);
+}
+function doSomethingElseAsychronously(callback) {
     process.nextTick(callback);
 }
