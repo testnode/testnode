@@ -15,6 +15,7 @@ var sys = require('sys');
 var glob = require('glob');
 var control = new (require('events').EventEmitter);
 test.onFailureExitNonZero();
+test.suiteMode();
 
 var dir = process.ARGV[2];
 if (!dir) {
@@ -34,7 +35,9 @@ var getFiles = function() {
 control.on('getFilesDone', function(){
   sys.puts(files);
   files.forEach(function(file){
+    sys.puts('Loading file ' + file);
     require('./' + file);
+    sys.puts('Loaded file ' + file);
   });
 });
 

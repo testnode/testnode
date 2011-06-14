@@ -4,6 +4,8 @@ module.exports = (function(test){
 
     var out = this;
 
+    var indentSpace = '  ';
+
     var lastDot = false;
     var log = function(indent, text, colour) {
         if (lastDot) {
@@ -12,7 +14,7 @@ module.exports = (function(test){
         var spaces = '';
         var i=0;
         for(i=0; i<indent; i++) {
-            spaces = spaces + '  ';
+            spaces = spaces + indentSpace;
         }
         if (text.constructor == Array) {
             text.forEach(function(tex){
@@ -38,7 +40,7 @@ module.exports = (function(test){
         if (!lastDot) {
             var i=0;
             for(i=0; i<initialIndent; i++) {
-                spaces = spaces + '  ';
+                spaces = spaces + indentSpace;
             }
             lastDot = true;
         }
@@ -47,26 +49,47 @@ module.exports = (function(test){
 
     var last = null;
 
-    test.on('pushContext', function(o){
-        var contextIndent = o.context._depth();
-        log(contextIndent, color(o.context._name, "yellow"));
-        last = null;
-    });
+    var loggedContexts = {};
+    var logContext = function(ctx) {
+      if (!loggedContexts[ctx._uniqueId()]) {
+        loggedContexts[ctx._uniqueId()] = true;
 
-//    test.on('popContext', function(o){
-//        log(0, '');
-//    });
+        var contextIndent = ctx._depth();
+        log(contextIndent-2, color(ctx._name, "yellow"));
+        last = null;
+
+      }
+    };
+
+    var eachContextForTestBottomUp = function(test, callback) {
+      var ctx;
+      for (ctx=test._context; ctx._parentContext !== null; ctx = ctx._parentContext) {
+        callback(ctx);
+      }
+    };
+    var eachContextForTestTopDown = function(test, callback) {
+      var contexts = [];
+      eachContextForTestBottomUp(test, function(ctx){
+        contexts.push(ctx);
+      });
+      for(var i=contexts.length-1; i>=0; i--) {
+        callback(contexts[i]);
+      }
+    };
 
     test.on('testStarted', function(t){
+        eachContextForTestTopDown(t, function(ctx){
+          logContext(ctx);
+        });
         var contextIndent = t._context._depth();
-        log(contextIndent+1, "it " + color(t._name, "yellow"));
+        log(contextIndent-1, "it " + color(t._name, "yellow"));
         last = 'testStarted';
     });
 
     test.on('testTimeout', function(t){
         var contextIndent = t._context._depth();
-        log(contextIndent, 'Did you remember to call done() for test "'+t._name+'"?', 'magenta');
-        log(contextIndent, 'Make sure you do. We don\'t print out the stack traces until done() has been called' +"\n", 'magenta');
+        log(contextIndent-2, 'Did you remember to call done() for test "'+t._name+'"?', 'magenta');
+        log(contextIndent-2, 'Make sure you do. We don\'t print out the stack traces until done() has been called' +"\n", 'magenta');
         last = null;
     });
 
@@ -74,12 +97,12 @@ module.exports = (function(test){
         var contextIndent = t._context._depth();
         var n = t._failures.length || t._passes.length;
         var message = (t._failures.length == 0) ? color(n + ' assertion'+(n==1?'':'s')+' passed','green') : color(n + ' assertion'+(n==1?'':'s')+" failed\n",'red');
-        log(contextIndent+2, message);
+        log(contextIndent, message);
         t._failures.forEach(function(assertion){
             var callString = assertion.callString();
             var failureMessage = assertion.failureMessage();
-            log(contextIndent+2, callString + ' : ' + failureMessage, 'red+bold');
-            log(contextIndent+2, assertion.stack, 'white');
+            log(contextIndent, callString + ' : ' + failureMessage, 'red+bold');
+            log(contextIndent, assertion.stack, 'white');
             log(0, '');
         });
         last = null;
@@ -87,19 +110,19 @@ module.exports = (function(test){
 
     test.on('testFlunk', function(o){
         var contextIndent = o.context._depth();
-        log(contextIndent+2, o.context + ': '+color('Failed','red')+': ' + o.message);
+        log(contextIndent, o.context + ': '+color('Failed','red')+': ' + o.message);
         last = null;
     });
 
     test.on('assertionPassed', function(o){
         var contextIndent = o.context._depth();
-        dot(contextIndent+2, color('+','green'));
+        dot(contextIndent, color('+','green'));
         last = 'assertionPassed';
     });
 
     test.on('assertionFailed', function(o){
         var contextIndent = o.context._depth();
-        dot(contextIndent+2, color('x','red'));
+        dot(contextIndent, color('x','red'));
         last = 'assertionFailed';
     });
 

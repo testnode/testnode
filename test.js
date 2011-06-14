@@ -15,7 +15,11 @@ module.exports = (function(Assertion, testQueue, timeout){
       delete this['emit'];
 
       Test.emit('new', this);
-      testQueue.put(this);
+      var self = this;
+      // must do this next tick so context can listen to this test's events beforehand
+      process.nextTick(function(){
+        testQueue.put(self);
+      });
   };
   sys.inherits(Test, EventEmitter);
   events.classEvents(Test);
