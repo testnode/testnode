@@ -33,11 +33,9 @@ var getFiles = function() {
 };
 
 control.on('getFilesDone', function(){
-  sys.puts(files);
   files.forEach(function(file){
     sys.puts('Loading file ' + file);
     require('./' + file);
-    sys.puts('Loaded file ' + file);
   });
 });
 
