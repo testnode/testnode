@@ -101,16 +101,20 @@ module.exports = (function(test){
         t._failures.forEach(function(assertion){
             var callString = assertion.callString();
             var failureMessage = assertion.failureMessage();
-            log(contextIndent, callString + ' : ' + failureMessage, 'red+bold');
+            if (callString) {
+              log(contextIndent, callString + ' : ' + failureMessage, 'red+bold');
+            } else {
+              log(contextIndent, failureMessage, 'red+bold');
+            }
             log(contextIndent, assertion.stack, 'white');
             log(0, '');
         });
         last = null;
     });
 
-    test.on('testFlunk', function(o){
-        var contextIndent = o.context._depth();
-        log(contextIndent, o.context + ': '+color('Failed','red')+': ' + o.message);
+    test.on('testFlunk', function(t){
+        var contextIndent = t._context._depth();
+        //log(contextIndent, color('Failed','red')+': ' + o.message);
         last = null;
     });
 

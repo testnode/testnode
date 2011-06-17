@@ -2,6 +2,25 @@ module.exports = (function(Assertion, testQueue, timeout){
   var events = require('./events');
   var EventEmitter = events.EventEmitter;
   var sys = require('sys');
+
+  /* Flunk instance is called as if it were an Assertion instance */
+  var Flunk = function(test, error) {
+    this.test = test;
+    this.error = error;
+    var numberOfStackLinesToSkip = 1 /* First line which is just the name of the fake error we created: "Error" */;
+    this.stackLines = error.stack.split("\n").map(function(line){
+        return line.trim();
+    });
+    this.stack = this.stackLines.slice(numberOfStackLinesToSkip);
+    this._failureMessage = this.stackLines[0];
+  };
+  Flunk.prototype.failureMessage = function() {
+    return this._failureMessage;
+  };
+  Flunk.prototype.callString = function() {
+    return null;
+  };
+
   var Test = function(context, name, testFunction) {
       this._context = context;
       this._name = name;
@@ -26,7 +45,9 @@ module.exports = (function(Assertion, testQueue, timeout){
   Test.prototype._call = function() {
       var test = this;
       this._emit('testStarted', this);
+      var doneCalled = false;
       this.done = function() {
+          doneCalled = true;
           clearTimeout(timer);
           test._emit('testDone', test);
       };
@@ -36,13 +57,18 @@ module.exports = (function(Assertion, testQueue, timeout){
       try {
           this._testFunction.call(this, this);
       } catch(error) {
-          this.flunk(error.toString(), {error: error, test: this});
+          if (!doneCalled) {
+            clearTimeout(timer);
+          }
+          this._failures.push(new Flunk(this, error));
+        test._emit('testDone', this);
+          //this._emit('testFlunk', this);
+          //this.flunk();
       }
   };
-  Test.prototype.flunk = function(message, options) {
-      options = options ? options : {};
-      this._emit('testFlunk', {context: this._context, message: message, options: options});
-  };
+  /*Test.prototype.flunk = function() {
+      this._emit('testFlunk', this);
+  };*/
 
   Assertion.on('assertionAdded', function(definition){
     var methodName = definition['methodName'];
