@@ -93,6 +93,11 @@ module.exports = (function(test){
         last = null;
     });
 
+    test.on('uncaughtException', function(error){
+        log(0, error.stack, 'white');
+        log(0, '');
+    });
+
     test.on('testDone', function(t){
         var contextIndent = t._context._depth();
         var n = t._failures.length || t._passes.length;

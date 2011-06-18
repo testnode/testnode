@@ -48,23 +48,28 @@ module.exports = (function(Assertion, testQueue, timeout){
       var doneCalled = false;
       this.done = function() {
           doneCalled = true;
-          clearTimeout(timer);
+          test._clearDoneTimer();
           test._emit('testDone', test);
       };
-      var timer = setTimeout(function(){
-          test._emit('testTimeout', test);
-      }, timeout);
+      this._startDoneTimer();
       try {
           this._testFunction.call(this, this);
       } catch(error) {
           if (!doneCalled) {
-            clearTimeout(timer);
+            this._clearDoneTimer();
           }
           this._failures.push(new Flunk(this, error));
-        test._emit('testDone', this);
-          //this._emit('testFlunk', this);
-          //this.flunk();
+          test._emit('testDone', this);
       }
+  };
+  Test.prototype._startDoneTimer = function() {
+      var test = this;
+      this._timer = setTimeout(function(){
+          test._emit('testTimeout', test);
+      }, timeout);
+  };
+  Test.prototype._clearDoneTimer = function() {
+      clearTimeout(this._timer);
   };
   /*Test.prototype.flunk = function() {
       this._emit('testFlunk', this);

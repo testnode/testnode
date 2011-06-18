@@ -11,6 +11,7 @@ module.exports = function(main) {
     };
     main.on('assertionFailed', seenFailureCallback);
     main.on('testFlunk', seenFailureCallback);
+    main.on('uncaughtException', seenFailureCallback);
 
     var calledOnFailureExitNonZero = false;
     main.onFailureExitNonZero = function() {
@@ -24,4 +25,11 @@ module.exports = function(main) {
           });
         }
     };
+
+    main.handleUncaughtExceptions = function() {
+        process.on('uncaughtException', function (error) {
+            main.emit('uncaughtException', error);
+        });
+    };
+
 };
