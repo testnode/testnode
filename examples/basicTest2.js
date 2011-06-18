@@ -1,4 +1,4 @@
-var test = require('../noodleTest')();
+var test = require('../testnode')();
 test.onFailureExitNonZero();
 
 test.context("Example Test Suite", function() {

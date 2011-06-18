@@ -1,7 +1,7 @@
 {
-  "name": "noodle-test",
+  "name": "testnode",
   "description": "Testing library for Node",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "dependencies" : {
     "glob": "",
     "ansi-color": ""
@@ -9,8 +9,8 @@
   "repository": {
     "url": ""
   },
-  "author": "Joel Plane <joel@avial.com.au>",
-  "main": "noodleTest.js",
+  "author": "Joel Plane <maintainer@testnode.org>",
+  "main": "testnode.js",
   "directories": {
     "lib": "."
   },

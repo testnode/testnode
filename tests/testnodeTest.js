@@ -1,21 +1,21 @@
-var test = require('../noodleTest')();
+var test = require('../testnode')();
 var EventEmitter = require('events').EventEmitter;
 var sys = require('sys');
 test.onFailureExitNonZero();
 
-test.context("NoodleTest dogfood test", function() {
+test.context("TestNode dogfood test", function() {
 
     this.context('Environment', function() {
       this.context('instantiation', function() {
         this.it('should return the same instance when given the same config', function() {
-          var t1 = require('../noodleTest')({quiet: true});
-          var t2 = require('../noodleTest')({quiet: true});
+          var t1 = require('../testnode')({quiet: true});
+          var t2 = require('../testnode')({quiet: true});
           this.assertEqual(t1, t2);
           this.done();
         });
         this.it('should return a different instance when given different configs', function() {
-          var t1 = require('../noodleTest')({quiet: true, timeout: 1000});
-          var t2 = require('../noodleTest')({quiet: true});
+          var t1 = require('../testnode')({quiet: true, timeout: 1000});
+          var t2 = require('../testnode')({quiet: true});
           this.assertNotEqual(t1, t2);
           this.done();
         });
@@ -24,7 +24,7 @@ test.context("NoodleTest dogfood test", function() {
 
     this.context('Basic Execution', function() {
       this.it("should call the first context callback", function(outerTest) {
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           t.context("test context", function() {
             outerTest.done();
             this.it("test test", function(innerTest){
@@ -35,7 +35,7 @@ test.context("NoodleTest dogfood test", function() {
 
       this.it("should call the first test callback", function(outerTest) {
 
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           t.context("test context", function() {
             this.it("test test", function(innerTest){
               outerTest.done();
@@ -47,7 +47,7 @@ test.context("NoodleTest dogfood test", function() {
 
       this.it("should call the second context callback after the first", function(outerTest) {
         var firstCalled = false;
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           t.context("test context", function() {
             firstCalled = true;
             this.it("test1", function(innerTest){
@@ -66,7 +66,7 @@ test.context("NoodleTest dogfood test", function() {
 
       this.it("should call the second test callback after the first", function(outerTest) {
         var firstCalled = false;
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           t.context("test context", function() {
             this.it("test 1", function(innerTest){
               firstCalled = true;
@@ -86,7 +86,7 @@ test.context("NoodleTest dogfood test", function() {
       this.it("should keep Assertion in test's failed array if an assertion fails", function(outerTest) {
         var ee = new EventEmitter();
 
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
 
           ee.on('setupDone', function(test){
             outerTest.assert(test._failures.length > 0);
@@ -111,7 +111,7 @@ test.context("NoodleTest dogfood test", function() {
             outerTest.done();
           };
 
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           var timer = setTimeout(function(){
             finish();
           }, 200);
@@ -144,7 +144,7 @@ test.context("NoodleTest dogfood test", function() {
             outerTest.done();
           };
 
-          var t = require('../noodleTest')({quiet: true});
+          var t = require('../testnode')({quiet: true});
           t.on('assertionFailed', function() {
             failed = true;
             finish();
@@ -168,7 +168,7 @@ test.context("NoodleTest dogfood test", function() {
 
     this.context('Stack trace', function() {
       this.it("should be trimmed such that the first line is the client code", function(outerTest) {
-        var t = require('../noodleTest')({quiet: true});
+        var t = require('../testnode')({quiet: true});
           t.context('test context', function() {
             this.it('test test', function(innerTest){
               innerTest.assert(false);

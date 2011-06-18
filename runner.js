@@ -10,7 +10,7 @@
  *   + report on the results of running the test files
  *   - including exiting with non-zero whenever any test fails
  */
-var test = require('./noodleTest')();
+var test = require('./testnode')();
 var sys = require('sys');
 var glob = require('glob');
 var control = new (require('events').EventEmitter);
