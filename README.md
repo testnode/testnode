@@ -10,22 +10,8 @@ of this goal somewhere, but we'll try our best.
 It's a BDD-esc library in it's syntax, but that's about as far as it
 goes in terms of BDD.
 
-Example
--------
-
-**Basic Syntax**:
-
-    var test = require('testnode')();
-    test.onFailureExitNonZero();
-
-    test.context("Example Test Suite", function() {
-        this.context("Example Sub-Context", function() {
-            this.it("Basic Test Example", function(test) {
-                test.assert(true);
-                test.done();
-            });
-        });
-    });
+Usage and Example
+-----------------
 
 **Executing tests**:
 
@@ -34,6 +20,32 @@ Example
 OR
 
     testnode testsDirectory
+
+**Basic Syntax**:
+
+```javascript
+var test = require('testnode')();
+test.onFailureExitNonZero();
+
+test.context("Example Test Suite", function() {
+    this.context("Example Sub-Context", function() {
+        this.it("should run a basic example test", function(test) {
+            test.assert(true);
+            test.done();
+        });
+    });
+});
+```
+
+**Output**:
+
+```
+Example Test Suite
+  Example Sub-Context
+    it should run a basic example test
+      +
+      1 assertion passed
+```
 
 See the examples directory for more examples.
 
