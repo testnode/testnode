@@ -1,4 +1,4 @@
-var test = require('../testnode')();
+var test = require('testnode')();
 test.onFailureExitNonZero();
 test.handleUncaughtExceptions();
 

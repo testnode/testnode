@@ -1,7 +1,7 @@
 {
   "name": "testnode",
   "description": "Testing library for Node",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "dependencies" : {
     "glob": "",
     "ansi-color": ""

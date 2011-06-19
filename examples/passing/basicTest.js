@@ -1,10 +1,11 @@
-var test = require('../testnode')();
+var test = require('testnode')();
 test.onFailureExitNonZero();
 
 test.context("Example Test Suite", function() {
     this.context("Example Sub-Context", function() {
-        this.it("Test code throws exception", function(test) {
-            throw new Error('bleh');
+        this.it("Basic Test Example", function(test) {
+            test.assert(true);
+            test.done();
         });
     });
 });

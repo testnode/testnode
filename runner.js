@@ -5,7 +5,7 @@ module.exports = {
   run: function(files) {
     files.forEach(function(file){
       sys.puts('Loading file ' + file);
-      require('./' + file);
+      require(file);
     });
   }
 };
