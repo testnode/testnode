@@ -32,11 +32,6 @@ module.exports = (function(){
         var Context = require('./context')(Test);
         var main = new EventEmitter();
 
-        main._suiteMode = false;
-        main.suiteMode = function() {
-          main._suiteMode = true;
-        };
-
         /* Relay events emitted by Test and Context instances to the main object */
         Test.on('new', function(t){
           events.relayEvents(t, main, ['assertionPassed', 'assertionFailed', 'testFlunk', 'testStarted', 'testTimeout', 'testDone']);

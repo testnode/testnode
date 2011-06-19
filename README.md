@@ -31,7 +31,7 @@ Example
 
     node examples/basicTest.js
 
-OR *coming soon*:
+OR
 
     testnode testsDirectory
 

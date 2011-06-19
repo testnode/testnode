@@ -1,7 +1,7 @@
 {
   "name": "testnode",
   "description": "Testing library for Node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "dependencies" : {
     "glob": "",
     "ansi-color": ""
@@ -13,6 +13,9 @@
   "main": "testnode.js",
   "directories": {
     "lib": "."
+  },
+  "bin": {
+    "testnode": "bin/testnode.js"
   },
   "engines": {
     "node": "*"
