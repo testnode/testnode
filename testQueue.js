@@ -14,9 +14,11 @@ module.exports = (function() {
       if (q.array.length > 0) {
         var top = q.array[0];
         q.array = q.array.slice(1);
-        top.on('testDone', function(){
+        var onDone = function() {
           q.next();
-        });
+        };
+        top.on('testDone', onDone);
+        top.on('setupDone', onDone);
         top._call();
       } else {
         begun = false;

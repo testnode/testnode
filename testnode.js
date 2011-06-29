@@ -29,12 +29,16 @@ module.exports = (function(){
         var testQueue = require('./testQueue')();
         var Test = require('./test')(Assertion, testQueue, config.timeout);
         require('./assertions')(Assertion);
-        var Context = require('./context')(Test);
+        var Setup = require('./setup')(testQueue);
+        var Context = require('./context')(Test, Setup);
         var main = new EventEmitter();
 
-        /* Relay events emitted by Test and Context instances to the main object */
+        /* Relay events emitted to the main object */
         Test.on('new', function(t){
           events.relayEvents(t, main, ['assertionPassed', 'assertionFailed', 'testFlunk', 'testStarted', 'testTimeout', 'testDone']);
+        });
+        Setup.on('new', function(s){
+          events.relayEvents(s, main, ['setupStarted', 'setupDone']);
         });
         Context.on('new', function(ctx){
           events.relayEvents(ctx, main, ['pushContext', 'popContext']);
