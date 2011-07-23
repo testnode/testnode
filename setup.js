@@ -3,9 +3,8 @@ module.exports = (function(testQueue){
   var EventEmitter = events.EventEmitter;
   var sys = require('sys');
 
-  var Setup = function(context, type, setupFunction) {
+  var Setup = function(context, setupFunction) {
       this._context = context;
-      this._type = type;
       this._setupFunction = setupFunction;
       EventEmitter.call(this);
 

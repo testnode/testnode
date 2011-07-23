@@ -15,7 +15,7 @@ module.exports = (function(Test, Setup){
     this._parentContext = parentContext;
     this._subContexts = [];
     this._tests = [];
-    this._setups = {};
+    this._setups = [];
     EventEmitter.call(this);
 
     /* Rename emit() method from EventEmitter to indicate that it is private */
@@ -57,13 +57,8 @@ module.exports = (function(Test, Setup){
   Context.prototype.it = function(name, callback) {
     this._tests.push(new Test(this, name, callback));
   };
-  Context.prototype.beforeAll = function(callback) {
-    this._setups['beforeAll'] = this._setups['beforeAll'] || [];
-    this._setups['beforeAll'].push(new Setup(this, 'beforeAll', callback));
-  };
-  Context.prototype.afterAll = function(callback) {
-    this._setups['afterAll'] = this._setups['afterAll'] || [];
-    this._setups['afterAll'].push(new Setup(this, 'afterAll', callback));
+  Context.prototype.run = function(callback) {
+    this._setups.push(new Setup(this, callback));
   };
   Context.prototype._depth = function() {
     var parent = this;
